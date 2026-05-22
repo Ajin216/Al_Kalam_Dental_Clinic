@@ -1631,3 +1631,186 @@ footer {
         font-size: 2rem;
     }
 }
+
+/* ==========================================================================
+   6. LOCATION & DIRECTIONS CARD
+   ========================================================================== */
+.location-banner-card {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--gray-200);
+}
+
+.location-banner-info {
+    padding: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.location-banner-title {
+    font-size: 1.75rem;
+    color: var(--dark);
+    font-weight: 700;
+}
+
+.location-banner-desc {
+    color: var(--gray-600);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.location-features {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.loc-feat-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.loc-feat-icon {
+    font-size: 1.5rem;
+    background: rgba(var(--primary-rgb), 0.05);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.loc-feat-item h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.25rem;
+}
+
+.loc-feat-item p {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+.location-directions-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: flex-start;
+    padding: 0.8rem 1.5rem;
+}
+
+.location-banner-map-container {
+    width: 100%;
+    min-height: 380px;
+    background-color: var(--gray-100);
+    position: relative;
+}
+
+.location-banner-map-container iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ==========================================================================
+   7. FLOATING WHATSAPP BUTTON
+   ========================================================================== */
+.whatsapp-float {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background-color: #25d366;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.whatsapp-float:hover {
+    transform: translateY(-5px) scale(1.08);
+    background-color: #20ba5a;
+    box-shadow: 0 8px 30px rgba(37, 211, 102, 0.6);
+}
+
+.whatsapp-icon {
+    width: 32px;
+    height: 32px;
+}
+
+/* Ripple pulse animation to make it dynamic and premium */
+.whatsapp-float::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #25d366;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    animation: whatsapp-pulse 2.5s infinite;
+    z-index: -1;
+    opacity: 0;
+}
+
+@keyframes whatsapp-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
+
+/* Responsiveness for new sections */
+@media (max-width: 992px) {
+    .location-banner-card {
+        grid-template-columns: 1fr;
+    }
+    .location-banner-info {
+        padding: 2.5rem;
+    }
+    .location-banner-map-container {
+        height: 320px;
+        min-height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .whatsapp-float {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 52px;
+        height: 52px;
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    }
+    .whatsapp-icon {
+        width: 28px;
+        height: 28px;
+    }
+}

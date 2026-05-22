@@ -308,8 +308,8 @@ function initContactForm() {
                 '⚠️',
                 'Local File Restrictions',
                 `You are currently viewing this page directly as a local HTML file (<code>file://</code>).<br><br>` +
-                `<strong>FormSubmit requires a web server</strong> (accessed via <code>http://</code> or <code>https://</code>) to securely route messages and prevent spam.<br><br>` +
-                `💡 <strong>Don't worry!</strong> Once this website is hosted online (e.g. on Netlify, Vercel, or GitHub Pages), this contact form will work <strong>100% perfectly</strong> without any changes.<br><br>` +
+                `<strong>Google Apps Script Web App submissions require a web server</strong> (accessed via <code>http://</code> or <code>https://</code>) to securely forward messages.<br><br>` +
+                `💡 <strong>Don't worry!</strong> Once this website is hosted online (e.g. on Netlify, Vercel, or GitHub Pages), this contact form will work <strong>100% perfectly</strong>.<br><br>` +
                 `🛠️ <strong>To test it locally:</strong> Open this folder in VS Code and use the <strong>Live Server</strong> extension, or run <code>npx serve</code> or <code>python3 -m http.server</code> in this folder from your terminal.`,
                 'Okay, Got It'
             );
@@ -321,6 +321,21 @@ function initContactForm() {
         
         const submitBtn = document.getElementById('contact-submit-btn');
         if (!submitBtn) return;
+
+        const actionUrl = form.getAttribute('action') || '';
+        
+        // Check if user still has the placeholder action ID
+        if (!actionUrl || actionUrl.includes('YOUR_APPS_SCRIPT_ID')) {
+            showFormStatusModal(
+                '⚙️',
+                'Configuration Required',
+                `Your contact form is almost ready!<br><br>` +
+                `To complete the setup, please copy your deployed **Google Apps Script Web App URL** and paste it into the <code>action</code> attribute of the form in <code>index.html</code>.<br><br>` +
+                `💡 Detailed step-by-step instructions have been saved in <strong>GoogleAppsScript.gs</strong> in your project directory.`,
+                'Okay, Got It'
+            );
+            return;
+        }
         
         // Save original button content and disable
         const originalBtnHTML = submitBtn.innerHTML;
@@ -331,23 +346,19 @@ function initContactForm() {
             <span class="btn-spinner"></span>
         `;
 
-        const actionUrl = form.getAttribute('action') || 'https://formsubmit.co/1383c831b5ad266780aff6fee25d8bbd';
-        // Replace formsubmit url with the ajax endpoint version if it's the standard action
-        const ajaxUrl = actionUrl.includes('/ajax/') ? actionUrl : actionUrl.replace('formsubmit.co/', 'formsubmit.co/ajax/');
-
+        // Serialize Form Data as URLSearchParams to avoid preflight CORS OPTIONS requests
+        const params = new URLSearchParams();
         const formData = new FormData(form);
-        const data = {};
         formData.forEach((value, key) => {
-            data[key] = value;
+            params.append(key, value);
         });
 
-        fetch(ajaxUrl, {
+        fetch(actionUrl, {
             method: 'POST',
+            body: params,
             headers: {
-                'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            },
-            body: JSON.stringify(data)
+            }
         })
         .then(response => {
             if (!response.ok) {
@@ -361,7 +372,7 @@ function initContactForm() {
             submitBtn.style.opacity = '1';
             submitBtn.innerHTML = originalBtnHTML;
 
-            if (json.success === 'true' || json.success === true) {
+            if (json.result === 'success' || json.success === true) {
                 // Success!
                 form.reset();
                 showFormStatusModal(
