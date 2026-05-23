@@ -90,6 +90,7 @@ button, input, select, textarea {
 .section {
     padding: 6.5rem 0;
     position: relative;
+    scroll-margin-top: 80px; /* Offset for fixed header */
 }
 
 .section-bg {
@@ -301,6 +302,7 @@ header.scrolled {
     padding-top: 100px;
     position: relative;
     overflow: hidden;
+    scroll-margin-top: 80px; /* Offset for fixed header */
 }
 
 .hero-grid {

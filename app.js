@@ -9,181 +9,199 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   1b. SCROLL SPY & SCROLLED HEADER
+   1b. SCROLL SPY & SCROLLED HEADER (IntersectionObserver Powered)
    ========================================================================== */
 function initScrollSpy() {
     const header = document.getElementById('main-header');
-    const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('section');
 
-    // Add scrolled class to header
+    // Add scrolled class to header (highly optimized passive scroll listener)
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
+        if (header) {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
         }
+    }, { passive: true });
 
-        // Skip scroll spy state synchronization if programmatic scroll is in progress
-        if (window.isProgrammaticScrolling) {
-            return;
-        }
+    // Use IntersectionObserver to track visible sections and highlight nav links
+    const spaPaths = ['home', 'about', 'services', 'contact'];
+    const sections = spaPaths.map(id => document.getElementById(id)).filter(Boolean);
 
-        // Active link highlighting based on current section viewport position
-        let currentSection = 'home';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop - 150;
-            if (window.scrollY >= sectionTop) {
-                currentSection = section.getAttribute('id');
+    if (sections.length === 0) return;
+
+    // Track active intersections
+    const activeIntersections = new Map();
+
+    const observerOptions = {
+        root: null, // viewport
+        rootMargin: '-20% 0px -40% 0px', // detects when section is in the middle reading area
+        threshold: [0, 0.1, 0.2]
+    };
+
+    const observerCallback = (entries) => {
+        // Skip scroll spy state synchronization if programmatic scroll (link click / popstate) is in progress
+        if (window.isProgrammaticScrolling) return;
+
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                activeIntersections.set(entry.target.id, entry.intersectionRatio);
+            } else {
+                activeIntersections.delete(entry.target.id);
             }
         });
 
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            const href = link.getAttribute('href');
-            if (href === `/${currentSection}` || href === `#${currentSection}`) {
-                link.classList.add('active');
+        // Determine the most visible section
+        let activeSectionId = null;
+        let maxRatio = -1;
+
+        activeIntersections.forEach((ratio, id) => {
+            if (ratio > maxRatio) {
+                maxRatio = ratio;
+                activeSectionId = id;
             }
         });
 
-        // Keep URL pathname in browser address bar fully synchronized with scrolled section (on servers only)
-        if (window.location.protocol !== 'file:') {
-            const targetPath = '/' + currentSection;
-            if (window.location.pathname !== targetPath) {
-                window.history.replaceState(null, null, targetPath);
-            }
-        }
-    });
-}
-
-/* ==========================================================================
-   1c. HTML5 HISTORY API ROUTING (HYBRID ROUTER)
-   ========================================================================== */
-function initRouting() {
-    // If double-clicked locally as a file, let standard browser native anchors handle scroll
-    if (window.location.protocol === 'file:') {
-        return;
-    }
-
-    const spaPaths = ['/home', '/about', '/services', '/contact'];
-
-    // Instant scroll to target sections with standard offset (no delay animation)
-    function scrollToSection(sectionId, smooth = false) {
-        if (sectionId === 'home') {
-            window.scrollTo({
-                top: 0,
-                behavior: smooth ? 'smooth' : 'auto'
-            });
-            return;
+        // Fallback: If scrolled to absolute top, guarantee "home" section is active
+        if (window.scrollY < 80) {
+            activeSectionId = 'home';
         }
 
-        const element = document.getElementById(sectionId);
-        if (element) {
-            const header = document.getElementById('main-header');
-            const headerOffset = header ? header.offsetHeight : 80;
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementPosition - headerOffset + 2;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: smooth ? 'smooth' : 'auto'
-            });
-        }
-    }
-
-    // Intercept clicks on HTML relative hash anchors (like href="#about")
-    document.addEventListener('click', (e) => {
-        const link = e.target.closest('a');
-        if (!link) return;
-
-        const href = link.getAttribute('href');
-        if (!href) return;
-
-        // Check if the link targets one of our known sections
-        if (href.startsWith('#')) {
-            const targetId = href.substring(1);
-            const knownSections = ['home', 'about', 'services', 'contact'];
-
-            if (knownSections.includes(targetId)) {
-                e.preventDefault();
-
-                // Update active states on menu links immediately for snappier feedback
-                const navLinks = document.querySelectorAll('.nav-link');
-                navLinks.forEach(nl => {
-                    nl.classList.remove('active');
-                    if (nl.getAttribute('href') === href) {
-                        nl.classList.add('active');
-                    }
-                });
-
-                // Set programmatic flag to block scroll spy recalculations during jump
-                window.isProgrammaticScrolling = true;
-
-                // Update the address bar URL to a clean slash path (e.g., /about)
-                window.history.pushState(null, null, '/' + targetId);
-
-                // Trigger instant scroll (no time gap animation)
-                scrollToSection(targetId, false);
-
-                // Release flag after the scroll jump is complete
-                setTimeout(() => {
-                    window.isProgrammaticScrolling = false;
-                }, 50);
-            }
-        }
-    });
-
-    // Handle browser back/forward buttons
-    window.addEventListener('popstate', () => {
-        const path = window.location.pathname;
-        if (spaPaths.includes(path)) {
-            const targetId = path.substring(1);
-            
-            // Set programmatic flag
-            window.isProgrammaticScrolling = true;
-
-            // Update active menu link
+        if (activeSectionId) {
+            // Update nav links classes
             const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(nl => {
-                nl.classList.remove('active');
-                if (nl.getAttribute('href') === '#' + targetId) {
-                    nl.classList.add('active');
+            navLinks.forEach(link => {
+                if (link.getAttribute('data-scroll') === activeSectionId) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
                 }
             });
 
-            scrollToSection(targetId, false);
+            // Update browser history (only on servers, bypass on file://)
+            if (window.location.protocol !== 'file:') {
+                const targetPath = '/' + activeSectionId;
+                if (window.location.pathname !== targetPath) {
+                    window.history.replaceState({ sectionId: activeSectionId }, null, targetPath);
+                }
+            }
+        }
+    };
 
-            setTimeout(() => {
-                window.isProgrammaticScrolling = false;
-            }, 50);
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    sections.forEach(section => observer.observe(section));
+}
+
+/* ==========================================================================
+   1c. HTML5 HISTORY API ROUTING & SMOOTH SCROLLING
+   ========================================================================== */
+function initRouting() {
+    const spaPaths = ['/home', '/about', '/services', '/contact'];
+
+    // Smoothly scrolls to section and releases programmatic lock when complete
+    function scrollToSection(sectionId, usePushState = false) {
+        const element = document.getElementById(sectionId);
+        if (!element) return;
+
+        // Block IntersectionObserver updates while programmatic scroll is in progress
+        window.isProgrammaticScrolling = true;
+
+        // Instantly update navbar states for crisp user response
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            if (link.getAttribute('data-scroll') === sectionId) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        // Update history states
+        if (usePushState && window.location.protocol !== 'file:') {
+            window.history.pushState({ sectionId }, null, '/' + sectionId);
+        }
+
+        // Perform native smooth scroll
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Safely release the scroll spy lock using the modern 'scrollend' event or a fallback timeout
+        let isReleased = false;
+        const releaseLock = () => {
+            if (isReleased) return;
+            isReleased = true;
+            window.isProgrammaticScrolling = false;
+            window.removeEventListener('scrollend', releaseLock);
+        };
+
+        window.addEventListener('scrollend', releaseLock);
+        setTimeout(releaseLock, 1000); // safety fallback for older browsers
+    }
+
+    // Intercept clicks on links configured with [data-scroll]
+    document.addEventListener('click', (e) => {
+        const scrollLink = e.target.closest('[data-scroll]');
+        if (!scrollLink) return;
+
+        // Skip default page load jump
+        e.preventDefault();
+
+        const sectionId = scrollLink.getAttribute('data-scroll');
+        scrollToSection(sectionId, true);
+
+        // Auto close mobile navigation menus
+        const burger = document.getElementById('menu-burger');
+        const navMenu = document.getElementById('nav-menu');
+        if (burger && navMenu) {
+            burger.classList.remove('active');
+            navMenu.classList.remove('active');
         }
     });
 
-    // Handle initial direct page load or refreshes (via Vercel rewrites)
+    // Listen to browser Back and Forward navigation pops
+    window.addEventListener('popstate', (e) => {
+        const path = window.location.pathname;
+        if (spaPaths.includes(path)) {
+            const targetId = path.substring(1);
+            scrollToSection(targetId, false); // scroll to section without pushing additional history states
+        } else if (path === '/' && window.location.protocol !== 'file:') {
+            scrollToSection('home', false);
+        }
+    });
+
+    // Handle initial direct page load or refreshes (via server rewrites)
     const initialPath = window.location.pathname;
     if (spaPaths.includes(initialPath)) {
         const targetId = initialPath.substring(1);
         
         window.isProgrammaticScrolling = true;
 
-        // Update active menu link
+        // Setup navbar active highlight
         const navLinks = document.querySelectorAll('.nav-link');
-        navLinks.forEach(nl => {
-            nl.classList.remove('active');
-            if (nl.getAttribute('href') === '#' + targetId) {
-                nl.classList.add('active');
+        navLinks.forEach(link => {
+            if (link.getAttribute('data-scroll') === targetId) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
             }
         });
 
-        scrollToSection(targetId, false); // Instant snap on initial direct entry
-        document.documentElement.classList.remove('route-loading');
-
+        // Delay scroll slightly to ensure DOM coordinates are completely resolved
         setTimeout(() => {
-            window.isProgrammaticScrolling = false;
-        }, 50);
+            const element = document.getElementById(targetId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'auto' }); // instant jump on cold start for premium snappiness
+            }
+            document.documentElement.classList.remove('route-loading');
+            
+            setTimeout(() => {
+                window.isProgrammaticScrolling = false;
+            }, 100);
+        }, 100);
     } else {
-        if (initialPath === '/' || initialPath === '/index.html') {
-            window.history.replaceState(null, null, '/home');
+        // Fallback rewriting default paths to /home
+        if ((initialPath === '/' || initialPath === '/index.html') && window.location.protocol !== 'file:') {
+            window.history.replaceState({ sectionId: 'home' }, null, '/home');
         }
         document.documentElement.classList.remove('route-loading');
     }
