@@ -1,3 +1,8 @@
+/* SPA Route loading shield to prevent initial home layout flash */
+.route-loading {
+    visibility: hidden !important;
+}
+
 /* ==========================================================================
    DESIGN SYSTEM & CUSTOM STYLES: AL KALAM DENTAL CLINIC
    ========================================================================== */

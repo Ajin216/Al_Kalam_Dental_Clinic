@@ -1,7 +1,3 @@
-/* ==========================================================================
-   INTERACTIVE LOGIC: AL KALAM DENTAL CLINIC
-   ========================================================================== */
-
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize standard functionalities
     initScrollSpy();
@@ -9,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initReviewsCarousel();
     initAboutCarousel();
     initContactForm();
+    initRouting();
 });
 
 /* ==========================================================================
@@ -27,10 +24,15 @@ function initScrollSpy() {
             header.classList.remove('scrolled');
         }
 
+        // Skip scroll spy state synchronization if programmatic scroll is in progress
+        if (window.isProgrammaticScrolling) {
+            return;
+        }
+
         // Active link highlighting based on current section viewport position
         let currentSection = 'home';
         sections.forEach(section => {
-            const sectionTop = section.offsetTop - 120;
+            const sectionTop = section.offsetTop - 150;
             if (window.scrollY >= sectionTop) {
                 currentSection = section.getAttribute('id');
             }
@@ -43,7 +45,148 @@ function initScrollSpy() {
                 link.classList.add('active');
             }
         });
+
+        // Keep URL pathname in browser address bar fully synchronized with scrolled section (on servers only)
+        if (window.location.protocol !== 'file:') {
+            const targetPath = '/' + currentSection;
+            if (window.location.pathname !== targetPath) {
+                window.history.replaceState(null, null, targetPath);
+            }
+        }
     });
+}
+
+/* ==========================================================================
+   1c. HTML5 HISTORY API ROUTING (HYBRID ROUTER)
+   ========================================================================== */
+function initRouting() {
+    // If double-clicked locally as a file, let standard browser native anchors handle scroll
+    if (window.location.protocol === 'file:') {
+        return;
+    }
+
+    const spaPaths = ['/home', '/about', '/services', '/contact'];
+
+    // Instant scroll to target sections with standard offset (no delay animation)
+    function scrollToSection(sectionId, smooth = false) {
+        if (sectionId === 'home') {
+            window.scrollTo({
+                top: 0,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+            return;
+        }
+
+        const element = document.getElementById(sectionId);
+        if (element) {
+            const header = document.getElementById('main-header');
+            const headerOffset = header ? header.offsetHeight : 80;
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - headerOffset + 2;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+        }
+    }
+
+    // Intercept clicks on HTML relative hash anchors (like href="#about")
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        // Check if the link targets one of our known sections
+        if (href.startsWith('#')) {
+            const targetId = href.substring(1);
+            const knownSections = ['home', 'about', 'services', 'contact'];
+
+            if (knownSections.includes(targetId)) {
+                e.preventDefault();
+
+                // Update active states on menu links immediately for snappier feedback
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(nl => {
+                    nl.classList.remove('active');
+                    if (nl.getAttribute('href') === href) {
+                        nl.classList.add('active');
+                    }
+                });
+
+                // Set programmatic flag to block scroll spy recalculations during jump
+                window.isProgrammaticScrolling = true;
+
+                // Update the address bar URL to a clean slash path (e.g., /about)
+                window.history.pushState(null, null, '/' + targetId);
+
+                // Trigger instant scroll (no time gap animation)
+                scrollToSection(targetId, false);
+
+                // Release flag after the scroll jump is complete
+                setTimeout(() => {
+                    window.isProgrammaticScrolling = false;
+                }, 50);
+            }
+        }
+    });
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', () => {
+        const path = window.location.pathname;
+        if (spaPaths.includes(path)) {
+            const targetId = path.substring(1);
+            
+            // Set programmatic flag
+            window.isProgrammaticScrolling = true;
+
+            // Update active menu link
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(nl => {
+                nl.classList.remove('active');
+                if (nl.getAttribute('href') === '#' + targetId) {
+                    nl.classList.add('active');
+                }
+            });
+
+            scrollToSection(targetId, false);
+
+            setTimeout(() => {
+                window.isProgrammaticScrolling = false;
+            }, 50);
+        }
+    });
+
+    // Handle initial direct page load or refreshes (via Vercel rewrites)
+    const initialPath = window.location.pathname;
+    if (spaPaths.includes(initialPath)) {
+        const targetId = initialPath.substring(1);
+        
+        window.isProgrammaticScrolling = true;
+
+        // Update active menu link
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(nl => {
+            nl.classList.remove('active');
+            if (nl.getAttribute('href') === '#' + targetId) {
+                nl.classList.add('active');
+            }
+        });
+
+        scrollToSection(targetId, false); // Instant snap on initial direct entry
+        document.documentElement.classList.remove('route-loading');
+
+        setTimeout(() => {
+            window.isProgrammaticScrolling = false;
+        }, 50);
+    } else {
+        if (initialPath === '/' || initialPath === '/index.html') {
+            window.history.replaceState(null, null, '/home');
+        }
+        document.documentElement.classList.remove('route-loading');
+    }
 }
 
 /* ==========================================================================
@@ -318,12 +461,12 @@ function initContactForm() {
 
         // 2. Perform AJAX submission if on a web server
         e.preventDefault();
-        
+
         const submitBtn = document.getElementById('contact-submit-btn');
         if (!submitBtn) return;
 
         const actionUrl = form.getAttribute('action') || '';
-        
+
         // Check if user still has the placeholder action ID
         if (!actionUrl || actionUrl.includes('YOUR_APPS_SCRIPT_ID')) {
             showFormStatusModal(
@@ -336,7 +479,7 @@ function initContactForm() {
             );
             return;
         }
-        
+
         // Save original button content and disable
         const originalBtnHTML = submitBtn.innerHTML;
         submitBtn.disabled = true;
@@ -360,47 +503,47 @@ function initContactForm() {
                 'Accept': 'application/json'
             }
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(json => {
-            // Restore button
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            submitBtn.innerHTML = originalBtnHTML;
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(json => {
+                // Restore button
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.innerHTML = originalBtnHTML;
 
-            if (json.result === 'success' || json.success === true) {
-                // Success!
-                form.reset();
+                if (json.result === 'success' || json.success === true) {
+                    // Success!
+                    form.reset();
+                    showFormStatusModal(
+                        '✅',
+                        'Message Sent Successfully!',
+                        'Thank you for reaching out to Al Kalam Dental Clinic. Our team has received your message and will get back to you shortly.',
+                        'Great!'
+                    );
+                } else {
+                    throw new Error(json.message || 'Submission failed');
+                }
+            })
+            .catch(error => {
+                console.error('Submission error:', error);
+                // Restore button
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.innerHTML = originalBtnHTML;
+
+                // Show error popup
                 showFormStatusModal(
-                    '✅',
-                    'Message Sent Successfully!',
-                    'Thank you for reaching out to Al Kalam Dental Clinic. Our team has received your message and will get back to you shortly.',
-                    'Great!'
+                    '❌',
+                    'Submission Failed',
+                    `Something went wrong while sending your inquiry.<br><br>` +
+                    `Please double-check your connection, or contact us directly at <strong>+91 94954 90821</strong> or via email at <strong>drckrahman@gmail.com</strong>.`,
+                    'Try Again'
                 );
-            } else {
-                throw new Error(json.message || 'Submission failed');
-            }
-        })
-        .catch(error => {
-            console.error('Submission error:', error);
-            // Restore button
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            submitBtn.innerHTML = originalBtnHTML;
-
-            // Show error popup
-            showFormStatusModal(
-                '❌',
-                'Submission Failed',
-                `Something went wrong while sending your inquiry.<br><br>` +
-                `Please double-check your connection, or contact us directly at <strong>+91 94954 90821</strong> or via email at <strong>drckrahman@gmail.com</strong>.`,
-                'Try Again'
-            );
-        });
+            });
     });
 }
 
@@ -411,7 +554,7 @@ function showFormStatusModal(icon, title, desc, actionText = 'Okay') {
     document.getElementById('form-status-icon').innerHTML = icon;
     document.getElementById('form-status-title').innerText = title;
     document.getElementById('form-status-desc').innerHTML = desc;
-    
+
     const actionBtn = modal.querySelector('#form-status-action button');
     if (actionBtn) {
         actionBtn.innerText = actionText;
