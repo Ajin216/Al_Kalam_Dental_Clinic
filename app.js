@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAboutCarousel();
     initContactForm();
     initRouting();
+    initLightbox();
 });
 
 /* ==========================================================================
@@ -26,7 +27,7 @@ function initScrollSpy() {
     }, { passive: true });
 
     // Use IntersectionObserver to track visible sections and highlight nav links
-    const spaPaths = ['home', 'about', 'services', 'contact'];
+    const spaPaths = ['home', 'about', 'services', 'gallery', 'contact'];
     const sections = spaPaths.map(id => document.getElementById(id)).filter(Boolean);
 
     if (sections.length === 0) return;
@@ -97,7 +98,7 @@ function initScrollSpy() {
    1c. HTML5 HISTORY API ROUTING & SMOOTH SCROLLING
    ========================================================================== */
 function initRouting() {
-    const spaPaths = ['/home', '/about', '/services', '/contact'];
+    const spaPaths = ['/home', '/about', '/services', '/gallery', '/contact'];
 
     // Smoothly scrolls to section and releases programmatic lock when complete
     function scrollToSection(sectionId, usePushState = false) {
@@ -592,6 +593,90 @@ function closeFormStatusModal() {
 
 // Expose functions to window
 window.closeFormStatusModal = closeFormStatusModal;
+
+
+/* ==========================================================================
+   6. GALLERY LIGHTBOX SYSTEM
+   ========================================================================== */
+const GALLERY_IMAGES = [
+    { src: 'alkalam1.webp', title: 'Modern Treatment Suite' },
+    { src: 'alkalam2.webp', title: 'Advanced Dental Technology' },
+    { src: 'alkalam3.webp', title: 'Comfortable Care Chamber' },
+    { src: 'alkalam4.webp', title: 'Professional Sanitization & Tools' },
+    { src: 'alkalam5.webp', title: 'Clinical Hygiene Systems' },
+    { src: 'alkalam6.webp', title: 'Modern Surgical Chair Suite' }
+];
+
+let currentLightboxIndex = 0;
+
+function initLightbox() {
+    // Setup keyboard accessibility listener
+    window.addEventListener('keydown', (e) => {
+        const modal = document.getElementById('gallery-lightbox-modal');
+        if (!modal || !modal.classList.contains('active')) return;
+
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowRight') {
+            nextLightboxSlide();
+        } else if (e.key === 'ArrowLeft') {
+            prevLightboxSlide();
+        }
+    });
+}
+
+function openLightbox(index) {
+    currentLightboxIndex = index;
+    updateLightboxContent();
+    
+    const modal = document.getElementById('gallery-lightbox-modal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Lock body scroll
+    }
+}
+
+function closeLightbox() {
+    const modal = document.getElementById('gallery-lightbox-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = ''; // Restore body scroll
+    }
+}
+
+function nextLightboxSlide() {
+    currentLightboxIndex = (currentLightboxIndex + 1) % GALLERY_IMAGES.length;
+    updateLightboxContent();
+}
+
+function prevLightboxSlide() {
+    currentLightboxIndex = (currentLightboxIndex - 1 + GALLERY_IMAGES.length) % GALLERY_IMAGES.length;
+    updateLightboxContent();
+}
+
+function updateLightboxContent() {
+    const imageElement = document.getElementById('lightbox-image');
+    const titleElement = document.getElementById('lightbox-title');
+    if (!imageElement || !titleElement) return;
+
+    const currentItem = GALLERY_IMAGES[currentLightboxIndex];
+    
+    // Apply simple fade effect during image switch
+    imageElement.style.opacity = '0.3';
+    setTimeout(() => {
+        imageElement.src = currentItem.src;
+        imageElement.alt = currentItem.title;
+        titleElement.innerText = currentItem.title;
+        imageElement.style.opacity = '1';
+    }, 50);
+}
+
+// Expose lightbox functions to the global window context
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+window.nextLightboxSlide = nextLightboxSlide;
+window.prevLightboxSlide = prevLightboxSlide;
+
 
 
 

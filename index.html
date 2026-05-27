@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="styles.css">
     <script>
         (function () {
-            const spaPaths = ['/about', '/services', '/contact'];
+            const spaPaths = ['/about', '/services', '/gallery', '/contact'];
             if (spaPaths.includes(window.location.pathname) && window.location.protocol !== 'file:') {
                 document.documentElement.classList.add('route-loading');
             }
@@ -40,6 +40,7 @@
                 <li><a href="/home" data-scroll="home" class="nav-link active" id="link-home">Home</a></li>
                 <li><a href="/about" data-scroll="about" class="nav-link" id="link-about">About Us</a></li>
                 <li><a href="/services" data-scroll="services" class="nav-link" id="link-services">Services</a></li>
+                <li><a href="/gallery" data-scroll="gallery" class="nav-link" id="link-gallery">Gallery</a></li>
                 <li><a href="/contact" data-scroll="contact" class="nav-link" id="link-contact">Contact Us</a></li>
                 <li class="mobile-cta-li">
                     <a href="tel:+919495490821" class="btn btn-primary" id="mobile-nav-cta">
@@ -341,6 +342,139 @@
         </div>
     </section>
 
+    <section class="section" id="gallery">
+        <div class="container">
+            <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 3rem;">
+                <span class="section-badge">Our Gallery</span>
+                <h2 class="section-title">Moments & Care at Al Kalam</h2>
+                <p class="section-desc">Take a visual tour of our modern facilities, state-of-the-art equipment, and professional care environment.</p>
+            </div>
+            
+            <div class="gallery-grid" id="gallery-images-grid">
+                <div class="gallery-card" onclick="openLightbox(0)">
+                    <div class="gallery-img-wrapper">
+                        <img src="alkalam1.webp" alt="Al Kalam Dental Clinic View 1" class="gallery-img" loading="lazy">
+                        <div class="gallery-overlay">
+                            <span class="gallery-zoom-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                            </span>
+                            <span class="gallery-card-title">Modern Treatment Suite</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-card" onclick="openLightbox(1)">
+                    <div class="gallery-img-wrapper">
+                        <img src="alkalam2.webp" alt="Al Kalam Dental Clinic View 2" class="gallery-img" loading="lazy">
+                        <div class="gallery-overlay">
+                            <span class="gallery-zoom-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                            </span>
+                            <span class="gallery-card-title">Advanced Dental Technology</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-card" onclick="openLightbox(2)">
+                    <div class="gallery-img-wrapper">
+                        <img src="alkalam3.webp" alt="Al Kalam Dental Clinic View 3" class="gallery-img" loading="lazy">
+                        <div class="gallery-overlay">
+                            <span class="gallery-zoom-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                            </span>
+                            <span class="gallery-card-title">Comfortable Care Chamber</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-card" onclick="openLightbox(3)">
+                    <div class="gallery-img-wrapper">
+                        <img src="alkalam4.webp" alt="Al Kalam Dental Clinic View 4" class="gallery-img" loading="lazy">
+                        <div class="gallery-overlay">
+                            <span class="gallery-zoom-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                            </span>
+                            <span class="gallery-card-title">Professional Sanitization & Tools</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-card" onclick="openLightbox(4)">
+                    <div class="gallery-img-wrapper">
+                        <img src="alkalam5.webp" alt="Al Kalam Dental Clinic View 5" class="gallery-img" loading="lazy">
+                        <div class="gallery-overlay">
+                            <span class="gallery-zoom-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                            </span>
+                            <span class="gallery-card-title">Clinical Hygiene Systems</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-card" onclick="openLightbox(5)">
+                    <div class="gallery-img-wrapper">
+                        <img src="alkalam6.webp" alt="Al Kalam Dental Clinic View 6" class="gallery-img" loading="lazy">
+                        <div class="gallery-overlay">
+                            <span class="gallery-zoom-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                            </span>
+                            <span class="gallery-card-title">Modern Surgical Chair Suite</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lightbox Modal for Gallery -->
+    <div class="modal" id="gallery-lightbox-modal">
+        <div class="modal-backdrop" onclick="closeLightbox()"></div>
+        <div class="lightbox-content">
+            <button class="modal-close lightbox-close" onclick="closeLightbox()" aria-label="Close Lightbox">&times;</button>
+            <div class="lightbox-image-wrapper">
+                <img src="" id="lightbox-image" alt="Gallery View">
+            </div>
+            <div class="lightbox-caption">
+                <h3 id="lightbox-title">Al Kalam Dental Clinic</h3>
+            </div>
+            <button class="lightbox-nav-btn prev" onclick="prevLightboxSlide()" aria-label="Previous Image">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <button class="lightbox-nav-btn next" onclick="nextLightboxSlide()" aria-label="Next Image">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+        </div>
+    </div>
+
     <div class="modal" id="service-detail-modal">
         <div class="modal-backdrop" onclick="closeServiceModal()"></div>
         <div class="modal-content">
@@ -565,6 +699,7 @@
                     <li><a href="/home" data-scroll="home">Home</a></li>
                     <li><a href="/about" data-scroll="about">About Clinic</a></li>
                     <li><a href="/services" data-scroll="services">Treatments</a></li>
+                    <li><a href="/gallery" data-scroll="gallery">Gallery</a></li>
                     <li><a href="/contact" data-scroll="contact">Contact Us</a></li>
                 </ul>
             </div>
